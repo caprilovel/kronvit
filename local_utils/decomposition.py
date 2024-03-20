@@ -171,7 +171,6 @@ def kronlinear2linear(kronlinear_layer, config=None):
             
 
 def freeze_A(model):
-    
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
             freeze_A(module)
@@ -224,13 +223,34 @@ def freeze_S(model):
 def unfreeze_S(model):
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
-            # recurse
-            model._modules[name] = unfreeze_S(module)
-            
-        elif isinstance(module, KronLinear):
-            module.s.requires_grad = True
+            freeze_A(module)
+        else:
+            if isinstance(module, KronLinear):
+                module.s.requires_grad = True
+            else:
+                continue
 
 
+
+def fasterKDP(x, a, b):
+    x_shape = x.shape
+    a_shape = a.shape
+    b_shape = b.shape
+    
+    
+    assert a_shape[0] * b_shape[0] == x_shape[-1], "The shapes of the input tensor and the factors are not compatible"
+    # change x[-1] into a[0] b[0]
+    x = x.view(-1, a_shape[0], b_shape[0])    
+    x = x @ b
+    x = torch.permute(x, (0, 2, 1)).contiguous()
+    x = x @ a
+    x = torch.permute(x, (0, 2, 1)).contiguous()
+    
+    y_shape = [*x_shape[:-1], a_shape[-1] * b_shape[-1]]
+    x = x.view(y_shape)
+    return x
+    
+    
             
             
             

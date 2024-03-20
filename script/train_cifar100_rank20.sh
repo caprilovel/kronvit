@@ -13,17 +13,15 @@ torchrun --nproc_per_node=$GPU_NUM \
      --master_port 29508\
       main.py \
      --epochs 300 \
-     --model deit_tiny_patch16_224 \
+     --model kron_deit_tiny_patch16_224 \
      --batch-size 256 \
-     --kron True\
-     --freeze_A True\
+     --kron \
      --data-set CIFAR \
      --data-path /local/storage/ding/cifar100 \
-     --lr 1e-3\
      --output_dir /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_20/ \
      --kron_rank 20\
      --shape_bias 3\
-    #  --finetune /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_20/best_checkpoint.pth \
+     --finetune /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_20/best_checkpoint.pth \
 
 end_time=$(date +"%s")
 

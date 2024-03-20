@@ -11,6 +11,7 @@ from torch.jit import Final
 
 
 from typing import List
+from local_utils.decomposition import fasterKDP
 
 
 def factorize(n: int, bias=0) -> List[int]:
@@ -46,6 +47,42 @@ Kronnecker_group = [[
      ],
     ]
 
+class Kron1Linear(nn.Module):
+    def __init__(self, in_features, out_features, shape_bias, structure_sparse, *args, **kwargs) -> None:
+        super().__init__()
+        
+        
+        in_shape = factorize(in_features, shape_bias)
+        out_shape = factorize(out_features, shape_bias)
+        a_shape = (in_shape[0], out_shape[1])
+        b_shape = (in_shape[1], out_shape[0])# change the order of the shape
+        
+        if structure_sparse:
+            self.s = nn.Parameter(torch.randn( *a_shape), requires_grad=True)
+        
+        self.a = nn.Parameter(torch.randn(*a_shape), requires_grad=True)
+        self.b = nn.Parameter(torch.randn(*b_shape), requires_grad=True)
+        
+        self.W_0 = nn.Parameter(torch.zeros(in_features, out_features), requires_grad=False)
+        
+        nn.init.xavier_uniform_(self.a)
+        nn.init.xavier_uniform_(self.b)
+    
+    def forward(self, x):
+        a = self.a
+        if self.structured_sparse:
+            a = self.s.unsqueeze(0) * self.a
+        
+        # a = self.s.unsqueeze(0) * self.a
+        y_1 = x @ self.W_0
+        y_2  = fasterKDP(x, a, self.b)
+        y = y_1 + y_2
+        return y
+
+    def update_W_0(self):
+        self.W_0 += (self.s * self.a) @ self.b
+        
+        
 class KronLinear(nn.Module):
     def __init__(self, in_features, out_features, shape_bias=0, structured_sparse=False, bias=True, rank_rate=0.1, rank=0) -> None:
         """Kronecker Linear Layer
@@ -251,3 +288,6 @@ class LowRankLinear(nn.Module):
         if self.bias is not None:
             out += self.bias
         return out
+    
+
+

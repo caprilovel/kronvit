@@ -10,35 +10,24 @@ export CUDA_VISIBLE_DEVICES=0,1
 start_time=$(date +"%s") 
 
 torchrun --nproc_per_node=$GPU_NUM \
-     --master_port 29510\
-      main.py \
-     --epochs 300 \
-     --model kron_deit_tiny_patch16_224 \
-     --batch-size 512 \
-     --kron_a_freeze \
-     --data-set CIFAR \
-     --data-path /local/storage/ding/cifar100 \
-     --lr 1e-3\
-     --output_dir /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_10/ \
-     --kron_rank 10\
-     --shape_bias 3\
-     --finetune /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_10/best_checkpoint.pth \
-
-
-torchrun --nproc_per_node=$GPU_NUM \
-     --master_port 29507\
+     --master_port 29505\
       main.py \
      --epochs 300 \
      --model kron_deit_tiny_patch16_224 \
      --batch-size 256 \
-     --kron_b_freeze \
+     --kron \
      --data-set CIFAR \
      --data-path /local/storage/ding/cifar100 \
      --lr 1e-3\
+     --warmup-lr 1e-3\
+     --min-lr 1e-4\
      --output_dir /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_10/ \
      --kron_rank 10\
      --shape_bias 3\
      --finetune /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_10/best_checkpoint.pth \
+
+
+
 end_time=$(date +"%s")
 
 # Calculate and echo the total time taken

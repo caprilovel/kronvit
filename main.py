@@ -29,6 +29,7 @@ import models_v2
 import utils
 
 from local_utils.decomposition import freeze_A, freeze_B, freeze_S, kron_decompose_model
+from local_utils.decomposition import unfreeze_A, unfreeze_B, unfreeze_S
 
 
 def get_args_parser():
@@ -435,7 +436,9 @@ def main(args):
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             data_loader_train.sampler.set_epoch(epoch)
+        
 
+            
         train_stats = train_one_epoch(
             model, criterion, data_loader_train,
             optimizer, device, epoch, loss_scaler,

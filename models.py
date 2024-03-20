@@ -151,20 +151,35 @@ def kron_deit_tiny_patch16_224(pretrained=False, **kwargs):
     'shape_bias':3,
     'rank':1
     }
-    kron_config['rank'] = kwargs['rank'] if 'rank' in kwargs else 1
+    kron_config['rank'] = kwargs['kron_rank'] if 'kron_rank' in kwargs else 1
     kron_config['shape_bias'] = kwargs['shape_bias'] if 'shape_bias' in kwargs else 3
+    
+    
+    from local_utils.decomposition import kron_decompose_model, freeze_A, freeze_B, freeze_S, unfreeze_A, unfreeze_B, unfreeze_S
+    if kwargs['freeze_A']:
+        
+        freeze_A(model)
+        freeze_S(model)
+        unfreeze_B(model)
+        
+    if kwargs['freeze_B']:
+        freeze_B(model)
+        unfreeze_A(model)
+        unfreeze_S(model)
+        
+    
     
     
     print(f"kron_config: {kron_config}")
         
     
     model = kron_decompose_model(model, kron_config)
-    if 'freeze_A' in kwargs and kwargs['freeze_A']: 
-        freeze_A(model)
-        freeze_S(model)
+    # if 'freeze_A' in kwargs and kwargs['freeze_A']: 
+    #     freeze_A(model)
+    #     freeze_S(model)
     
-    if 'freeze_B' in kwargs and kwargs['freeze_B']:
-            freeze_B(model)
+    # if 'freeze_B' in kwargs and kwargs['freeze_B']:
+    #         freeze_B(model)
 
     if pretrained:
         checkpoint = torch.hub.load_state_dict_from_url(

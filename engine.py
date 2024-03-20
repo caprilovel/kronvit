@@ -14,6 +14,8 @@ from timm.utils import accuracy, ModelEma
 
 from losses import DistillationLoss
 import utils
+from local_utils.decomposition import freeze_A, freeze_B, freeze_S
+from local_utils.decomposition import unfreeze_A, unfreeze_B, unfreeze_S
 
 
 def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
@@ -26,6 +28,16 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     header = 'Epoch: [{}]'.format(epoch)
     print_freq = 10
+    
+    # if (epoch // 10) % 2 == 0 and args.kron:
+    #     freeze_A(model)
+    #     freeze_S(model)
+    #     unfreeze_B(model)
+        
+    # if (epoch // 10) % 2 == 1 and args.kron:
+    #     unfreeze_A(model)
+    #     unfreeze_S(model)
+    #     freeze_B(model)
     
     if args.cosub:
         criterion = torch.nn.BCEWithLogitsLoss()
