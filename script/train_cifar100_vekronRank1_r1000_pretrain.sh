@@ -19,10 +19,11 @@ torchrun --nproc_per_node=$GPU_NUM \
      --k1l \
      --data-set CIFAR \
      --data-path /local/storage/ding/cifar100 \
-     --lr 5e-4\
-     --warmup-lr 1e-4\
-     --min-lr 1e-4\
-     --output_dir /home/zhu.3723/kronvit/output/cifar100_vekron_bias0/ \
+     --lr 1e-4\
+     --warmup-lr 5e-5\
+     --min-lr 5e-5\
+     --output_dir /local/storage/ding/kronvit/tiny \
+     --finetune /local/storage/ding/kronvit/tiny/best_checkpoint.pth \
 
 
 

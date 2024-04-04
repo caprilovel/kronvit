@@ -234,7 +234,6 @@ class VeKronLinearRank1(nn.Module):
 
         self.rank = rank if rank > 0 else 1
         
-        
         self.structured_sparse = structured_sparse
         
         if structured_sparse:
@@ -251,8 +250,8 @@ class VeKronLinearRank1(nn.Module):
         self.a_lambda.data = torch.ones_like(self.a_lambda)
         self.b_lambda.data = torch.zeros_like(self.b_lambda)
         
-        nn.init.xavier_uniform_(self.a)
-        nn.init.xavier_uniform_(self.b)
+        nn.init.uniform_(self.a, -1, 1)
+        nn.init.uniform_(self.b, -1, 1)
         self.a_shape = self.a.shape
         self.b_shape = self.b.shape
         bias_shape = np.multiply(a_shape, b_shape)
@@ -279,10 +278,22 @@ class VeKronLinearRank1(nn.Module):
             b = b.view(*self.b_shape[1:])
         
         out = fasterKDP(x, a, b) 
+        out += x @ self.W_0
         
         if self.bias is not None:
             out += self.bias.unsqueeze(0)
         return out
+    
+    def update_W_0(self):
+        with torch.no_grad():
+            if self.structured_sparse:
+                self.W_0 += torch.kron((self.s * self.a), self.b)
+            self.W_0 += torch.kron(self.a, self.b)
+        print('update W_0')
+        nn.init.uniform_(self.a, -1, 1)
+        nn.init.uniform_(self.b, -1, 1)
+        self.a_lambda.data = torch.ones_like(self.a_lambda)
+        self.b_lambda.data = torch.zeros_like(self.b_lambda)
     
 class KronLinear(nn.Module):
     def __init__(self, in_features, out_features, shape_bias=0, structured_sparse=False, bias=True, rank_rate=0.1, rank=0) -> None:

@@ -38,13 +38,12 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
     #     unfreeze_A(model)
     #     unfreeze_S(model)
     #     freeze_B(model)
-    if epoch == 20 and k1l:
-        from local_utils.model_utils import k1l_freezes
-        print(k1l_freezes(model))
+
     
     if epoch >= 20 and k1l and epoch % 20 == 0:
         from local_utils.model_utils import k1l_update_model
         k1l_update_model(model)
+        
         
     
     if args.cosub:

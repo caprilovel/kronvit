@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 
-from local_models.KronLinear import Kron1Linear, VeKronLinear
+from local_models.KronLinear import Kron1Linear, VeKronLinearRank1
 
 
 def k1l_decompose_model(model, layer_config=None):
@@ -43,8 +43,9 @@ def k1l_update_model(model, layer_config=None):
             # recurse
             model._modules[name] = k1l_update_model(module, layer_config)
             
-        elif isinstance(module, Kron1Linear):
+        elif isinstance(module, Kron1Linear or VeKronLinearRank1):
             module.update_W_0()
+            print('update W_0')
     return model
 
 def k1l_freezes(model):
@@ -98,8 +99,8 @@ def linear2vekronlinear(linear_layer, config=None):
         shape_bias = config['shape_bias'] if 'shape_bias' in config else 0
         structured_sparse = config['structured_sparse'] if 'structured_sparse' in config else False
         print(config['structured_sparse'])
-    vekronlinear = VeKronLinear(linear_layer.weight.shape[1], linear_layer.weight.shape[0], structured_sparse=structured_sparse, shape_bias=shape_bias, rank=1000)
-    
+    vekronlinear = VeKronLinearRank1(linear_layer.weight.shape[1], linear_layer.weight.shape[0], structured_sparse=structured_sparse, shape_bias=shape_bias, rank=1000)
+    vekronlinear.W_0.data = linear_layer.weight.data
     return vekronlinear 
 
 def vekron_decompose_model(model, layer_config=None):

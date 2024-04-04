@@ -4,14 +4,14 @@
 cd /home/zhu.3723/kronvit/
 GPU_NUM=2
 export OMP_NUM_THREADS=1
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=2,3
 
 
 
 start_time=$(date +"%s") 
 
 torchrun --nproc_per_node=$GPU_NUM \
-     --master_port 29501\
+     --master_port 29530\
       main.py \
      --epochs 1500 \
      --model vekron_deit_tiny_patch16_224 \
@@ -19,10 +19,10 @@ torchrun --nproc_per_node=$GPU_NUM \
      --k1l \
      --data-set CIFAR \
      --data-path /local/storage/ding/cifar100 \
-     --lr 5e-4\
-     --warmup-lr 1e-4\
-     --min-lr 1e-4\
-     --output_dir /home/zhu.3723/kronvit/output/cifar100_vekron_bias0/ \
+     --lr 5e-3\
+     --warmup-lr 1e-3\
+     --min-lr 1e-3\
+     --output_dir /local/storage/ding/kronvit/tiny/uniform \
 
 
 

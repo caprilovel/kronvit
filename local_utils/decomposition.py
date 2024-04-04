@@ -235,6 +235,44 @@ def fasterKDP(x, a, b):
     x = x.view(y_shape)
     return x
 
+def kronecker_product_decompose(weight, a_shape, b_shape, rank=1):
+    # input a matrix, output a kronecker product of two matrices, a and b
+    assert weight.shape[0] == a_shape[0] * b_shape[0], "The shapes of the input tensor and the factors are not compatible"
+    assert weight.shape[1] == a_shape[1] * b_shape[1], "The shapes of the input tensor and the factors are not compatible"
+    
+    weight = weight.view(a_shape[0], b_shape[0], a_shape[1], b_shape[1])
+    weight = weight.permute(0, 2, 1, 3).contiguous()
+    weight = weight.view(a_shape[0] * a_shape[1], b_shape[0] * b_shape[1])
+    U, S, V = torch.linalg.svd(weight)
+    u = U[:, :rank]
+    v = V[:rank, :]
+    s = torch.sqrt(S[:rank])
+    u = u @ torch.diag(s)
+    v = torch.diag(s) @ v
+    
+    a = u.view(a_shape[0], a_shape[1], rank).permute(2, 0, 1).contiguous()
+    b = v.view(rank, b_shape[0], b_shape[1])
+    return a, b
+
+def low_rank_approximation(weight, rank):
+    U, S, V = torch.linalg.svd(weight)
+    u = U[:, :rank]
+    v = V[:rank, :]
+    s = torch.sqrt(S[:rank])
+    u = u @ torch.diag(s)
+    v = torch.diag(s) @ v
+    return u, v
+    
+if __name__ == "__main__":
+    w = torch.randn(6, 12)
+    a_shape = (2, 3)
+    b_shape = (3, 4)
+    for i in range(1, 6):
+        a, b = kronecker_product_decompose(w, a_shape, b_shape, rank=i)
+        w_1  = kron(a, b)
+        print(torch.dist(w, w_1))
+    
+
     
     
             

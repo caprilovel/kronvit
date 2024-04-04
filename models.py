@@ -236,7 +236,7 @@ def vekron_deit_base_patch16_224(pretrained=False, **kwargs):
     }
     kron_config['rank'] = kwargs['kron_rank'] if 'kron_rank' in kwargs else 1
     kron_config['shape_bias'] = kwargs['shape_bias'] if 'shape_bias' in kwargs else 3
-    kron_config['structured_sparse'] = kwargs['structured_sparse'] if 'structured_sparse' in kwargs else True
+    kron_config['structured_sparse'] = kwargs['structured_sparse'] if 'structured_sparse' in kwargs else False
     
     print(f"kron_config: {kron_config}")
         
