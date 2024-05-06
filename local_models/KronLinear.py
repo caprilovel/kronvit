@@ -296,7 +296,7 @@ class VeKronLinearRank1(nn.Module):
         self.b_lambda.data = torch.zeros_like(self.b_lambda)
     
 class KronLinear(nn.Module):
-    def __init__(self, in_features, out_features, shape_bias=0, structured_sparse=False, bias=True, rank_rate=0.1, rank=0) -> None:
+    def __init__(self, in_features, out_features, patch_size=None, structured_sparse=False, bias=True, rank=0) -> None:
         """Kronecker Linear Layer
 
         Args:
@@ -307,13 +307,17 @@ class KronLinear(nn.Module):
             bias (bool, optional): _description_. Defaults to True.
         """
         super().__init__()
-        
-        in_shape = factorize(in_features, shape_bias)
-        out_shape = factorize(out_features, shape_bias)
-        a_shape = (in_shape[0], out_shape[1])
-        b_shape = (in_shape[1], out_shape[0])# change the order of the shape
-        self.rank = rank if rank > 0 else min(a_shape[0], a_shape[1], b_shape[0], b_shape[1]) * rank_rate
-        self.rank = int(self.rank) if int(self.rank) > 0 else 1
+        if patch_size is None:
+            in_shape = factorize(in_features)
+            out_shape = factorize(out_features)
+        else:
+            in_shape = [patch_size[0], in_features // patch_size[0]]
+            out_shape = [patch_size[1], out_features // patch_size[1]]
+        a_shape = (in_shape[1], out_shape[1])
+        b_shape = (in_shape[0], out_shape[0])# change the order of the shape
+  
+  
+        self.rank = int(rank) if int(rank) > 0 else 1
         
         self.structured_sparse = structured_sparse
         
@@ -332,7 +336,7 @@ class KronLinear(nn.Module):
             self.bias = nn.Parameter(torch.randn(*bias_shape[1:]), requires_grad=True)
         else:
             self.bias = None
-        print(self.a_shape, self.b_shape)
+        
         
     def forward(self, x):
         a = self.a
@@ -351,7 +355,6 @@ class KronLinear(nn.Module):
         
         # x = rearrange(x, 'n (a1 b1) -> n a1 b1', a1=self.a_shape[1], b1=self.b_shape[1])
         x = x.view(-1, self.a_shape[1], self.b_shape[1])
-        
         out = x @ b
         
         # out = rearrange(out, 'n a1 (b2 r) -> r (n b2) a1', b2=self.b_shape[2], r=self.rank) 
@@ -360,19 +363,13 @@ class KronLinear(nn.Module):
         # Permute dimensions
         out = out.permute(2, 0, 3, 1)
         out = out.contiguous().view(self.rank, -1, self.a_shape[1])
-        
         out = torch.bmm(out, a)
-        
         out = torch.sum(out, dim=0).squeeze(0)
         
         
         # out = rearrange(out, '(n b2) a2 -> n (a2 b2)', b2=self.b_shape[2])
         out = out.view(-1, self.b_shape[2], self.a_shape[2])
-
-        # Permute dimensions
         out = out.permute(0, 2, 1).contiguous()
-
-        # Reshape again
         out = out.view(-1, self.a_shape[2] * self.b_shape[2])
         
         
@@ -382,6 +379,21 @@ class KronLinear(nn.Module):
         if self.bias is not None:
             out += self.bias.unsqueeze(0)
         return out
+    
+    def generate_from_linear(self, linear_layer):
+        weight = linear_layer.weight
+        from local_utils.tensorops import gkpd
+        a_shape = (self.a_shape[2], self.a_shape[1])
+        b_shape = (self.b_shape[2], self.b_shape[1])
+        rank = self.rank
+        a, b = gkpd(weight, a_shape, b_shape)
+        a = a[:rank]
+        a = a.reshape(rank, a_shape[1], a_shape[0])
+        b = b[:rank]
+        b = b.reshape(rank, b_shape[1], b_shape[0])
+        self.a = nn.Parameter(a, requires_grad=True)
+        self.b = nn.Parameter(b, requires_grad=True)
+        
     
 class KronLeNet(nn.Module):
     def __init__(self, group_id=1) -> None:
@@ -458,10 +470,6 @@ class KronLeNet_5(nn.Module):
         return x
 
 
-if __name__ == "__main__":
-    from torchsummary import summary
-    vekronlinear = VeKronLinear(10, 10, structured_sparse=True)
-    vekronlinear(torch.randn(10, 10))
     
 class LowRankLinear(nn.Module):
     def __init__(self, in_features, out_features, rank_rate=0.5, bias=True) -> None:

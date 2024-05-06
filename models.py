@@ -9,7 +9,7 @@ from timm.models.vision_transformer import VisionTransformer, _cfg
 from timm.models.registry import register_model
 from timm.models.layers import trunc_normal_
 
-from local_utils.decomposition import kron_decompose_model, freeze_A, freeze_B, freeze_S
+from local_utils.model_utils import kron_decompose_model, freeze_A, freeze_B, freeze_S
 from local_utils.model_utils import k1l_decompose_model, vekron_decompose_model
 
 __all__ = [
@@ -147,27 +147,14 @@ def kron_deit_tiny_patch16_224(pretrained=False, **kwargs):
         norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
     model.default_cfg = _cfg()
     kron_config = {
-    'rank_rate': 6.0,
-    'structured_sparse': True,
-    'bias':False,
-    'shape_bias':3,
-    'rank':1
+    'rank': 10,
+    'patch_size': [4, 4]
     }
     kron_config['rank'] = kwargs['kron_rank'] if 'kron_rank' in kwargs else 1
     kron_config['shape_bias'] = kwargs['shape_bias'] if 'shape_bias' in kwargs else 3
     
     
-    from local_utils.decomposition import kron_decompose_model, freeze_A, freeze_B, freeze_S, unfreeze_A, unfreeze_B, unfreeze_S
-    if kwargs['freeze_A']:
-        
-        freeze_A(model)
-        freeze_S(model)
-        unfreeze_B(model)
-        
-    if kwargs['freeze_B']:
-        freeze_B(model)
-        unfreeze_A(model)
-        unfreeze_S(model)
+    from local_utils.model_utils import kron_decompose_model
         
     
     
@@ -176,12 +163,7 @@ def kron_deit_tiny_patch16_224(pretrained=False, **kwargs):
         
     
     model = kron_decompose_model(model, kron_config)
-    # if 'freeze_A' in kwargs and kwargs['freeze_A']: 
-    #     freeze_A(model)
-    #     freeze_S(model)
-    
-    # if 'freeze_B' in kwargs and kwargs['freeze_B']:
-    #         freeze_B(model)
+
 
     if pretrained:
         checkpoint = torch.hub.load_state_dict_from_url(

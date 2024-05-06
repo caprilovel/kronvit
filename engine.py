@@ -14,8 +14,8 @@ from timm.utils import accuracy, ModelEma
 
 from losses import DistillationLoss
 import utils
-from local_utils.decomposition import freeze_A, freeze_B, freeze_S
-from local_utils.decomposition import unfreeze_A, unfreeze_B, unfreeze_S
+from local_utils.model_utils import freeze_A, freeze_B, freeze_S
+from local_utils.model_utils import unfreeze_A, unfreeze_B, unfreeze_S
 
 
 def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,

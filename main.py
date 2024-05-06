@@ -28,8 +28,8 @@ import models_v2
 
 import utils
 
-from local_utils.decomposition import freeze_A, freeze_B, freeze_S, kron_decompose_model
-from local_utils.decomposition import unfreeze_A, unfreeze_B, unfreeze_S
+from local_utils.model_utils import freeze_A, freeze_B, freeze_S, kron_decompose_model
+from local_utils.model_utils import unfreeze_A, unfreeze_B, unfreeze_S
 
 
 def get_args_parser():
