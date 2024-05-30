@@ -190,6 +190,9 @@ def get_args_parser():
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     
     parser.add_argument('--kron_rank', default=0, type=int, help='kronecker rank')
+    parser.add_argument('--block_size', default=0, type=int, help='kronecker rank')
+    
+    
     parser.add_argument('--shape_bias', default=0, type=int, help='shape bias')
     parser.add_argument('--kron_a_freeze', action='store_true', default=False, help='freeze kron A')
     parser.add_argument('--kron_b_freeze', action='store_true', default=False, help='freeze kron B')
@@ -198,6 +201,8 @@ def get_args_parser():
     
     parser.add_argument('--k1l', action='store_true', default=False, help='k1l decomposition')
     parser.add_argument('--non-sparse', action='store_true', default=False, help='non-sparse')
+    parser.add_argument('--group_lasso', action='store_true', default=False, help='group lasso')
+    parser.add_argument('--elastic_group_lasso', action='store_true', default=False, help='elastic group lasso')
     return parser
 
     
@@ -211,7 +216,7 @@ def main(args):
         raise NotImplementedError("Finetuning with distillation not yet supported")
 
     device = torch.device(args.device)
-
+    kron = True if 'kron' in args.model else False
     # fix the seed for reproducibility
     seed = args.seed + utils.get_rank()
     torch.manual_seed(seed)
@@ -289,7 +294,7 @@ def main(args):
         structured_sparse = not args.non_sparse,
     )
     
-        
+    
                     
     if args.finetune:
         if args.finetune.startswith('https'):
@@ -448,7 +453,7 @@ def main(args):
             optimizer, device, epoch, loss_scaler,
             args.clip_grad, model_ema, mixup_fn,
             set_training_mode=args.train_mode,# keep in eval mode for deit finetuning / train mode for training and deit III finetuning
-            k1l=args.k1l,
+            kron = kron,
             args = args,
         )
 

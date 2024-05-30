@@ -17,9 +17,11 @@ torchrun --nproc_per_node=$GPU_NUM \
      --batch-size 256 \
      --data-set CIFAR \
      --data-path /local/storage/ding/cifar100 \
-     --lr 1e-3\
-     --output_dir /home/zhu.3723/kronvit/output/cifar100_kron/kron_group_lasso/16-1 \
-     # --finetune /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_6.0/best_checkpoint.pth \
+     --lr 1e-4\
+     --block_size 4 \
+     --kron_rank 4 \
+     --output_dir /home/zhu.3723/kronvit/output/cifar100_kron/kron_group_lasso/rank4blocksize4x4 \
+     --finetune /home/zhu.3723/kronvit/output/cifar100_kron/kron_group_lasso/rank4blocksize4x4/best_checkpoint.pth \
      
      
 

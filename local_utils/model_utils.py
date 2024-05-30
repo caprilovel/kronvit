@@ -22,9 +22,9 @@ def kron_decompose_model(model, layer_config=None):
             pass
         elif isinstance(module, nn.Linear):
             linear_layer = module
-            patch_size = layer_config['patch_size']
-            
-            decomposed = linear2kronlinear(linear_layer, patch_size = patch_size)
+            patch_size = layer_config['block_size']
+            rank = layer_config['rank']
+            decomposed = linear2kronlinear(linear_layer, rank=rank, patch_size = patch_size)
             print(decomposed.a.shape, decomposed.b.shape)
             model._modules[name] = decomposed
     return model

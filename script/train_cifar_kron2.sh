@@ -4,22 +4,22 @@
 cd /home/zhu.3723/kronvit/
 GPU_NUM=2
 export OMP_NUM_THREADS=1
-export CUDA_VISIBLE_DEVICES=4,5
+export CUDA_VISIBLE_DEVICES=6,7
 
 
 start_time=$(date +"%s") 
 
 torchrun --nproc_per_node=$GPU_NUM \
-     --master_port 29507\
+     --master_port 29506\
       main.py \
-     --epochs 300 \
+     --epochs 200 \
      --model kron_deit_tiny_patch16_224 \
      --batch-size 256 \
      --data-set CIFAR \
      --data-path /local/storage/ding/cifar100 \
      --lr 1e-3\
-     --output_dir /home/zhu.3723/kronvit/output/cifar100_kron/kron_group_lasso/16-1 \
-     # --finetune /home/zhu.3723/kronvit/output/cifar100_kron30/deit_tiny_patch16_224_6.0/best_checkpoint.pth \
+     --output_dir /home/zhu.3723/kronvit/output/cifar100_kron/kron_group_lasso/2-2/ \
+     --finetune /home/zhu.3723/kronvit/output/cifar100_kron/kron_group_lasso/2-2/best_checkpoint.pth \
      
      
 

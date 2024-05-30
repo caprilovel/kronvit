@@ -169,7 +169,7 @@ class VeKronLinear(nn.Module):
         self.structured_sparse = structured_sparse
         
         if structured_sparse:
-            self.s = nn.Parameter(torch.randn( *a_shape), requires_grad=True)
+            self.s = nn.Parameter(torch.ones( *a_shape), requires_grad=True)
         else:
             self.s = None
         self.a = nn.Parameter(torch.randn(self.rank, *a_shape), requires_grad=False)
@@ -187,7 +187,7 @@ class VeKronLinear(nn.Module):
         self.b_shape = self.b.shape
         bias_shape = np.multiply(a_shape, b_shape)
         if bias:
-            self.bias = nn.Parameter(torch.randn(*bias_shape[1:]), requires_grad=True)
+            self.bias = nn.Parameter(torch.zeros(*bias_shape[1:]), requires_grad=True)
         else:
             self.bias = None
         print(self.a_shape, self.b_shape)
@@ -322,7 +322,7 @@ class KronLinear(nn.Module):
         self.structured_sparse = structured_sparse
         
         if structured_sparse:
-            self.s = nn.Parameter(torch.randn( *a_shape), requires_grad=True)
+            self.s = nn.Parameter(torch.ones( *a_shape), requires_grad=True)
         else:
             self.s = None
         self.a = nn.Parameter(torch.randn(self.rank, *a_shape), requires_grad=True)
@@ -333,7 +333,7 @@ class KronLinear(nn.Module):
         self.b_shape = self.b.shape
         bias_shape = np.multiply(a_shape, b_shape)
         if bias:
-            self.bias = nn.Parameter(torch.randn(*bias_shape[1:]), requires_grad=True)
+            self.bias = nn.Parameter(torch.zeros(*bias_shape[1:]), requires_grad=True)
         else:
             self.bias = None
         

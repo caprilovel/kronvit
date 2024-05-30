@@ -1,18 +1,19 @@
 cd /home/zhu.3723/kronvit/
 GPU_NUM=2
 export OMP_NUM_THREADS=1
-export CUDA_VISIBLE_DEVICES=2,3
+export CUDA_VISIBLE_DEVICES=6,7
 
 
 start_time=$(date +"%s")
 torchrun --nproc_per_node=$GPU_NUM \
-     --master_port 29551\
+     --master_port 29521\
      main.py  \
      --model deit_base_patch16_224 \
      --batch-size 128 \
      --data-set CIFAR \
      --data-path /local/storage/ding/cifar100 \
-     --output_dir /home/zhu.3723/kronvit/output/cifar100_train_common30/ \
+     --output_dir /home/zhu.3723/kronvit/output/group_lasso_block4_2/ \
+     --group_lasso \
      # --finetune /home/zhu.3723/kronvit/output/cifar100_train_common30/best_checkpoint.pth \
 
 end_time=$(date +"%s")

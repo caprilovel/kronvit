@@ -145,13 +145,15 @@ def kron_deit_tiny_patch16_224(pretrained=False, **kwargs):
     model = VisionTransformer(
         patch_size=16, embed_dim=192, depth=12, num_heads=3, mlp_ratio=4, qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
+    
     model.default_cfg = _cfg()
     kron_config = {
-    'rank': 10,
-    'patch_size': [4, 4]
+    'rank': 2,
+    'block_size': [4, 4]
     }
     kron_config['rank'] = kwargs['kron_rank'] if 'kron_rank' in kwargs else 1
-    kron_config['shape_bias'] = kwargs['shape_bias'] if 'shape_bias' in kwargs else 3
+    if 'block_size' in kwargs:
+        kron_config['block_size'] = [kwargs['block_size'], kwargs['block_size']]
     
     
     from local_utils.model_utils import kron_decompose_model
@@ -163,7 +165,6 @@ def kron_deit_tiny_patch16_224(pretrained=False, **kwargs):
         
     
     model = kron_decompose_model(model, kron_config)
-
 
     if pretrained:
         checkpoint = torch.hub.load_state_dict_from_url(
